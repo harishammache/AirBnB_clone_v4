@@ -16,13 +16,18 @@
         <header>
             <div class="logo"></div>
             <div id="api_status" class="available">
-                item-align: right;
-                transform: translateY(-50%);
-                width: 40px;
-                height: 40px;
-                position: absolute;
-                border-right: 30px;
-                background-color: #CCCCCC;
+                <style>
+                    #api_status {
+                        width: 40px;
+                        height: 40px;
+                        position: absolute;
+                        right: 0;
+                        top: 50%;
+                        transform: translateY(-50%);
+                        background-color: #CCCCCC;
+                        border-right: 30px solid #000;
+                    }
+                </style>
             </div>
             </div>
         </header>
