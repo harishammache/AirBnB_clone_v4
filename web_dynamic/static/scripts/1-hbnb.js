@@ -1,38 +1,31 @@
-$(document).ready(function() {
-  // Variable to store the list of Amenity IDs
-  var amenityIDs = [];
+$(document).ready(function () {
+  // Dictionary to store the selected Amenity IDs and names
+  const selectedAmenities = {};
 
   // Function to update the list of Amenities in the h4 tag
   function updateAmenities() {
-      $('#Amenities').empty();
-      if (amenityIDs.length > 0) {
-          var amenitiesList = $('<ul></ul>');
-          amenityIDs.forEach(function(amenityID) {
-              var amenityItem = $('<li></li>').text(amenityID);
-              amenitiesList.append(amenityItem);
-          });
-          $('#Amenities').append(amenitiesList);
-      } else {
-          $('#Amenities').text('No amenities selected');
-      }
+    const amenitiesList = Object.values(selectedAmenities).join(", ");
+    if (amenitiesList.length > 0) {
+      $("div.amenities h4").text(amenitiesList);
+    } else {
+      $("div.amenities h4").html("&nbsp;");
+    }
   }
 
   // Event listener for changes on each input checkbox tag
-  $('input[type="checkbox"]').change(function() {
-      var amenityID = $(this).attr('data-id');
-      if ($(this).is(':checked')) {
-          // Add Amenity ID to the variable if checkbox is checked
-          if (amenityIDs.indexOf(amenityID) === -1) {
-              amenityIDs.push(amenityID);
-          }
-      } else {
-          // Remove Amenity ID from the variable if checkbox is unchecked
-          var index = amenityIDs.indexOf(amenityID);
-          if (index !== -1) {
-              amenityIDs.splice(index, 1);
-          }
+  $('input[type="checkbox"]').change(function () {
+    const amenityID = $(this).data("id");
+    const amenityName = $(this).data("name");
+    if ($(this).is(":checked")) {
+      // Add Amenity ID to the dictionary if checkbox is checked
+      if (!selectedAmenities[amenityID]) {
+        selectedAmenities[amenityID] = amenityName;
       }
-      // Update the h4 tag inside the div Amenities
-      updateAmenities();
+    } else {
+      // Remove Amenity ID from the dictionary if checkbox is unchecked
+      delete selectedAmenities[amenityID];
+    }
+    // Update the h4 tag inside the div Amenities
+    updateAmenities();
   });
 });
