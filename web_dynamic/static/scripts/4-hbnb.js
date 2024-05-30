@@ -1,59 +1,61 @@
-$(document).ready(function() {
-    const checkAmenities = {};
+$(document).ready(function () {
+    const nameAmenity = [];
+    const idAmenity = [];
 
-    $('input:checkbox').change(function() {
-        const amenityId = $(this).attr('data-id');
-        const amenityName = $(this).attr('data-name');
-
-        if ($(this).is(':checked')) {
-            checkAmenities[amenityId] = amenityName;
+    $('input:checkbox').click(function () {
+        if ($(this).is(":checked")) {
+            nameAmenity.push($(this).attr('data-name'));
+            idAmenity.push($(this).attr('data-id'));
         } else {
-            delete checkAmenities[amenityId];
+            const nameIndex = nameAmenity.indexOf($(this).attr('data-name'));
+            const idIndex = idAmenity.indexOf($(this).attr('data-id'));
+            nameAmenity.splice(nameIndex, 1);
+            idAmenity.splice(idIndex, 1);
         }
-
-        const amenitiesList = Object.values(checkAmenities).join(', ');
-        $('.amenities h4').text(amenitiesList);
+        $('.amenities h4').text(nameAmenity.join(', '));
     });
 
-    // Check API status
-    $.get('http://0.0.0.0:5000/api/v1/status/', function(data) {
-        if (data.status === "OK") {
-            $('#api_status').addClass('available');
+    $.get("http://localhost:5001/api/v1/status/", data => {
+        if (data.status == "OK") {
+            $('DIV#api_status').addClass("available");
         } else {
-            $('#api_status').removeClass('available');
+            $('DIV#api_status').removeClass("available");
         }
-    }).fail(function() {
-        $('#api_status').removeClass('available');
     });
 
-    // Function to handle button click event
-    $('#searchBtn').click(function() {
-        // Send POST request to places_search endpoint with checked amenities
+    function fetchPlaces(data) {
         $.ajax({
-            url: 'http://0.0.0.0:5000/api/v1/places_search',
             type: 'POST',
+            url: 'http://localhost:5001/api/v1/places_search',
+            data: JSON.stringify(data),
+            dataType: 'json',
             contentType: 'application/json',
-            data: JSON.stringify({
-                states: [], // Provide State IDs if needed
-                cities: [], // Provide City IDs if needed
-                amenities: Object.keys(checkAmenities) // Use checked amenities
-            }),
-            success: function(data) {
-                // Clear existing places
-                $('.places').empty();
-
-                // Loop through the result and create article tags
-                data.forEach(function(place) {
-                    const article = $('<article>').addClass('place');
-                    // Populate article with place data
-                    article.html(`<h2>${place.name}</h2><div class="price_by_night">${place.price_by_night}</div><div class="information"><div class="max_guest">${place.max_guest} Guest(s)</div><div class="number_rooms">${place.number_rooms} Bedroom(s)</div><div class="number_bathrooms">${place.number_bathrooms} Bathroom(s)</div></div><div class="description">${place.description}</div>`);
-                    // Append article to section.places
-                    $('.places').append(article);
-                });
-            },
-            error: function(xhr, status, error) {
-                console.error('Error:', error);
+            success: function (data) {
+                $('SECTION.places').empty().append(data.map(place => {
+                    return `<article>
+                              <div class="title_box">
+                                <h2>${place.name}</h2>
+                                <div class="price_by_night">$${place.price_by_night}</div>
+                              </div>
+                              <div class="information">
+                                <div class="max_guest">${place.max_guest} Guests</div>
+                                <div class="number_rooms">${place.number_rooms} Bedrooms</div>
+                                <div class="number_bathrooms">${place.number_bathrooms} Bathrooms</div>
+                              </div>
+                              <div class="description">
+                                ${place.description}
+                              </div>
+                            </article>`;
+                }));
             }
         });
+    }
+
+    // Initial fetch without any filter
+    fetchPlaces({});
+
+    // Fetch places based on selected amenities when the button is clicked
+    $('button').click(function () {
+        fetchPlaces({ amenities: idAmenity });
     });
 });
